@@ -1,4 +1,5 @@
 #!/bin/bash
+# https://github.com/mohrez021/bash_scripts/blob/main/backup_script/backup.sh
 
 verbose=0
 date_to_filename=""
