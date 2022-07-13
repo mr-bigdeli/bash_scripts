@@ -5,7 +5,7 @@ verbose=0
 date_to_filename=""
 backup_name=""
 
-function HELP () {	
+function HELP() {
 	cat <<EOL
 USAGE: $0 [OPTIONS] <source_dir> <backup_name>
 Options:
@@ -15,10 +15,7 @@ Options:
 			  Supported Formats: "time", "date", "datetime", "timestamp"
 
 EOL
-	}
-
-
-
+}
 
 if [[ $# -lt 2 ]] && [[ "$1" != "-h" ]]; then
 	HELP
@@ -27,41 +24,41 @@ fi
 
 while true; do
 	case $1 in
-		-h)
-			HELP
-			exit 0
-			;;
+	-h)
+		HELP
+		exit 0
+		;;
 
-		-v)
-			verbose=1
-			shift 1
+	-v)
+		verbose=1
+		shift 1
+		;;
+	-d)
+		case $2 in
+		time)
+			date_to_filename=$(date +%H%M%S)
 			;;
-		-d)
-			case $2 in
-				time)
-					date_to_filename=`date +%H%M%S`
-					;;
-				date)
-					date_to_filename=`date +%Y%m%d`
-					;;
-				datetime)
-					date_to_filename=`date +%Y%m%d-%H%M%S`
-					;;
-				timestamp)
-					date_to_filename=`date +%s`
-					;;
-				*)
-					echo "ERROR: Unsupported date format.("time", "date", "datetime", "timestamp")"
-					exit 1
-					;;
-
-			
-			esac
-			shift 2
+		date)
+			date_to_filename=$(date +%Y%m%d)
+			;;
+		datetime)
+			date_to_filename=$(date +%Y%m%d-%H%M%S)
+			;;
+		timestamp)
+			date_to_filename=$(date +%s)
 			;;
 		*)
-			break
+			echo "ERROR: Unsupported date format.("time", "date", "datetime", "timestamp")"
+			exit 1
 			;;
+
+		esac
+
+		shift 2
+		;;
+	*)
+		break
+		;;
 	esac
 done
 
@@ -81,7 +78,6 @@ else
 	backup_name=$2
 fi
 
-
 if [[ ! -d $1 ]]; then
 	echo "ERROR: '$1' should be a directory"
 	exit 1
@@ -92,17 +88,15 @@ if [[ -e $backup_name ]]; then
 	exit 1
 fi
 
-
 if [[ $verbose -ne 0 ]]; then
-		tar -zcvf $backup_name $1
+	tar -zcvf $backup_name $1
 else
-		tar -zcf $backup_name $1 &> /dev/null
+	tar -zcf $backup_name $1 &>/dev/null
 fi
 
 if [[ ! -f $backup_name ]]; then
-        echo "ERROR: couldn't create $backup_name"
+	echo "ERROR: couldn't create $backup_name"
 	exit 1
 else
 	echo "$backup_name created successfully"
 fi
-
