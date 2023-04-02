@@ -86,7 +86,3 @@ for i in $(seq 1 $NUM); do
 
     fi
 done
-#echo $VERBOSE
-#echo $NUM
-#echo $INTERVAL
-#echo $COMMAND
