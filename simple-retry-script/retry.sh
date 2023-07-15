@@ -1,88 +1,108 @@
-#!/usr/bin/bash
+#!/bin/bash
 
-re='^[0-9]+$'
 VERBOSE=0
 NUM=5
 INTERVAL=10
 
 help() {
-    cat <<EOL
-Usage: $0 [OPTIONS] COMMAND
+	cat <<EOF
+Usage: $0 [OPTIONS]...COMMAND
 Available options:
-  -h: Show this help output
+  -h: Show help of this command and exit.
   -v: Verbose mode
-  -n: Number of tries (default: 5)
-  -i: Interval seconds (default: 10)
+  -n: Number of tries (threashold) (Default: 5)
+  -i: Interval seconds between tries (Default: 10)
 Examples:
   $0 -v COMMAND
   $0 -v -n 3 -i 2 COMMAND
   $0 -v -i 5 COMMAND
   $0 -i 5 -n 2 COMMAND
-EOL
+EOF
 }
 
-function check_number {
-    if [[ $1 =~ $re ]]; then
-        return 0
-    else
-        help
-        exit 1
-    fi
+# check arguman is number (for interval and threshold)
+check_number() {
+	if [[ "$1" =~ ^[0-9]+$ ]]; then		# regex for matching digits(number)
+		return 0
+	else
+		return 1
+	fi
 }
 
+# age arguman vared nakard moghe ejra help neshoon bede
 if [[ $# -eq 0 ]]; then
-    help
-    exit 0
+	help
+	exit
 fi
 
+# ta vaghti arguman voroodi darim halghe ejra she
 while [[ $# -ne 0 ]]; do
-    case $1 in
-        -v)
-            VERBOSE=1
-            shift
-            ;;
-        -h)
-            help
-            exit 0
-            ;;
-        -n)
-            NUM=$2
-            check_number $NUM
-            shift 2
-            ;;
-        -i)
-            INTERVAL=$2
-            check_number $INTERVAL
-            shift 2
-            ;;
-        *)
-            COMMAND=$@
-            break
-            ;;
-    esac
+	case $1 in 
+		"-h")
+			help
+			exit
+			;;
+		"-v")
+			VERBOSE=1
+			shift
+			;;
+		"-n")
+			# check $2 is number
+			check_number $2
+			if [[ $? -ne 0 ]]; then
+				help
+				exit 1
+			fi
+			NUM=$2
+			shift 2
+			;;
+		"-i")
+			# check $2 is number
+			check_number $2
+			if [[ $? -ne 0 ]]; then
+				help
+				exit 1
+			fi
+			INTERVAL=$2
+			shift 2
+			;;
+		*)
+			# har chi dar edame zad user be onvane command ba arguman hash begir 
+			COMMAND=$@
+			#break yadet nare
+			break
+			;;
+	esac
 done
 
+# age toole reshteie COMMAND sefr bood , bia biroon va help neshoon bede
 if [[ -z $COMMAND ]]; then
-    help
-    exit 0
+	help
+	exit 0
 fi
 
-for i in $(seq 1 $NUM); do
-    $COMMAND
-    if [[ $? -eq 0 ]]; then
-        if [[ $VERBOSE -eq 1 ]]; then
-            echo "[INFO] $COMMAND got executed successfully"
-        fi
-         exit 0
-    else
-        if [[ $VERBOSE -eq 1 ]]; then
-            if [[ $i -eq $NUM ]]; then
-                echo "[ERROR] Try $i failed. Threshold reached and $COMMAND operation failed."
-                exit 1
-            fi
-            echo "[INFO] Try $i failed. sleep for $INTERVAL seconds..."
-        fi
-        sleep $INTERVAL
-
-    fi
+for i in $(seq $NUM); do
+	$COMMAND
+	if [[ $? -eq 0 ]]; then
+		SUCCESS=0
+		break
+	else
+		if [[ $VERBOSE -eq 1 ]]; then
+			echo "[INFO] Try $i failed. Sleep for $INTERVAL seconds..."
+		fi
+		SUCCESS=1
+		sleep $INTERVAL
+	fi
 done
+
+if [[ $SUCCESS -eq 0 ]]; then
+	if [[ $VERBOSE -eq 1 ]]; then
+		echo "[INFO] Command got executed successfully"
+	fi
+	exit 0
+else
+	if [[ $VERBOSE -eq 1 ]]; then
+		echo "[ERROR] Threshold is reached and command operation failed."
+	fi
+	exit 1
+fi
